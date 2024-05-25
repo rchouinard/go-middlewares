@@ -15,6 +15,7 @@ func RequestIDMiddleware(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := ulid.Make().String()
 		ctx := context.WithValue(r.Context(), requestIDKey, id)
+		w.Header().Add("X-Request-Id", id)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
