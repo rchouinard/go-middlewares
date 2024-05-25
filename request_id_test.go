@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRequestIDMiddleware(t *testing.T) {
+func TestRequestID(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
@@ -21,6 +21,6 @@ func TestRequestIDMiddleware(t *testing.T) {
 		assert.Len(t, id, 26)
 	})
 
-	handler := middlewares.RequestIDMiddleware(nextHandler)
+	handler := middlewares.RequestID(nextHandler)
 	handler.ServeHTTP(rec, req)
 }

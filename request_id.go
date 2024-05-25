@@ -11,7 +11,7 @@ const (
 	requestIDKey string = "requestID"
 )
 
-func RequestIDMiddleware(next http.Handler) http.HandlerFunc {
+func RequestID(next http.Handler) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := ulid.Make().String()
 		ctx := context.WithValue(r.Context(), requestIDKey, id)
