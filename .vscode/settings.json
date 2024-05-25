@@ -1,0 +1,45 @@
+{
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.rulers": [120],
+
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {},
+
+  "go.useLanguageServer": true,
+  "gopls": {
+    "ui.semanticTokens": true,
+    "ui.completion.usePlaceholders": true
+  },
+
+  "go.coverOnSave": false,
+
+  "go.lintTool": "golangci-lint",
+  "go.lintOnSave": "workspace",
+  "go.lintFlags": [
+    "--fast"
+  ],
+
+  "go.addTags": {
+    "tags": "json,validate",
+    "options": "json=omitempty,validate=omitempty",
+    "promptForTags": false,
+    "transform": "snakecase",
+    "template": ""
+  },
+
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  },
+
+  "[go.mod]": {
+    "editor.defaultFormatter": "golang.go"
+  }
+}

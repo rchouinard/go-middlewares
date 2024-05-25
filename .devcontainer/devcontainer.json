@@ -1,0 +1,32 @@
+{
+  "name": "GoDev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.22"
+    }
+  },
+
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "go.gopath": "/go"
+      },
+      "extensions": [
+        "editorconfig.editorconfig",
+        "golang.go"
+      ]
+    }
+  },
+
+  "postCreateCommand": "go install github.com/spf13/cobra-cli@latest",
+
+  "remoteUser": "vscode"
+}
