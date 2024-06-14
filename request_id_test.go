@@ -15,7 +15,7 @@ func TestRequestID(t *testing.T) {
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		id, ok := middlewares.RequestIDFromContext(ctx)
+		id, ok := middlewares.GetRequestIDFromContext(ctx)
 
 		assert.True(t, ok)
 		assert.Len(t, id, 26)

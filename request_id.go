@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	requestIDKey string = "requestID"
+	requestIDKey ctxKey = "requestID"
 )
 
-func RequestID(next http.Handler) http.HandlerFunc {
+func RequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := ulid.Make().String()
 		ctx := context.WithValue(r.Context(), requestIDKey, id)
@@ -20,12 +20,12 @@ func RequestID(next http.Handler) http.HandlerFunc {
 	})
 }
 
-func RequestIDFromContext(ctx context.Context) (string, bool) {
+func GetRequestIDFromContext(ctx context.Context) (string, bool) {
 	id, ok := ctx.Value(requestIDKey).(string)
 	return id, ok
 }
 
-func RequestIDFromRequest(r *http.Request) (string, bool) {
+func GetRequestIDFromRequest(r *http.Request) (string, bool) {
 	ctx := r.Context()
-	return RequestIDFromContext(ctx)
+	return GetRequestIDFromContext(ctx)
 }

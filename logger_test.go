@@ -1,6 +1,8 @@
 package middlewares_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -10,14 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type loggerReaderWriter struct {
-	Bytes int
+type loggerWriter struct {
+	Content []byte
 }
 
-func (lrw *loggerReaderWriter) Write(in []byte) (int, error) {
+func (lw *loggerWriter) Write(in []byte) (int, error) {
 	b := len(in)
 
-	lrw.Bytes += b
+	lw.Content = append(lw.Content, in...)
 
 	return b, nil
 }
@@ -25,27 +27,45 @@ func (lrw *loggerReaderWriter) Write(in []byte) (int, error) {
 func TestLogger(t *testing.T) {
 	rec := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	req.RemoteAddr = "100.100.100.100:12345"
+	req.Header.Set("Referer", "http://127.0.0.1:8000/")
+	req.Header.Set("User-Agent", "golang/test")
+
+	content := "Hello, World!"
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if el, ok := middlewares.LoggerFromRequest(r); ok {
-			el.Info("This is a test message")
+		if l, ok := middlewares.GetLoggerFromRequest(r); ok {
+			l.Info(content)
+			w.WriteHeader(200)
+			fmt.Fprintf(w, content)
 		}
 
 		return
 	})
 
-	accessWriter := &loggerReaderWriter{}
-	errorWriter := &loggerReaderWriter{}
+	accessWriter := &loggerWriter{}
+	errorWriter := &loggerWriter{}
 
-	assert.Equal(t, 0, accessWriter.Bytes)
-	assert.Equal(t, 0, errorWriter.Bytes)
+	accessLogger := slog.New(slog.NewJSONHandler(accessWriter, nil))
+	errorLogger := slog.New(slog.NewJSONHandler(errorWriter, nil))
 
-	handler := middlewares.LoggerWithConfig(middlewares.LoggerConfig{
-		AccessHandler: slog.NewJSONHandler(accessWriter, nil),
-		ErrorHandler:  slog.NewJSONHandler(errorWriter, nil),
-	})(nextHandler)
-	handler.ServeHTTP(rec, req)
+	mw := middlewares.NewLogger(errorLogger, accessLogger)(nextHandler)
+	mw.ServeHTTP(rec, req)
 
-	assert.Greater(t, accessWriter.Bytes, 0)
-	assert.Greater(t, errorWriter.Bytes, 0)
+	var accessJSON map[string]interface{}
+	json.Unmarshal(accessWriter.Content, &accessJSON)
+	assert.NotEmpty(t, accessJSON["time"].(string))
+	assert.Equal(t, "100.100.100.100", accessJSON["remote_ip"].(string))
+	assert.Equal(t, "GET / HTTP/1.1", accessJSON["request"].(string))
+	assert.Equal(t, 200, int(accessJSON["response"].(float64)))
+	assert.Equal(t, len(content), int(accessJSON["bytes"].(float64)))
+	assert.Equal(t, "http://127.0.0.1:8000/", accessJSON["referer"].(string))
+	assert.Equal(t, "golang/test", accessJSON["agent"].(string))
+	assert.Greater(t, int(accessJSON["duration"].(float64)), 1)
+
+	var errorJSON map[string]interface{}
+	json.Unmarshal(errorWriter.Content, &errorJSON)
+	assert.NotEmpty(t, errorJSON["time"].(string))
+	assert.Equal(t, "INFO", errorJSON["level"].(string))
+	assert.Equal(t, content, errorJSON["msg"].(string))
 }
