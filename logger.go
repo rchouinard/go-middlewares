@@ -31,6 +31,9 @@ var (
 	}
 )
 
+// Logger implements a middleware which adds a text [slog] access and error logger to each request.
+//
+// The access logger outputs to Stdout while the error logger outputs to Stderr.
 func Logger(next http.Handler) http.Handler {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, logHandlerOpts))
 	accLogger := slog.New(slog.NewTextHandler(os.Stdout, accLogHandlerOpts))
@@ -40,6 +43,9 @@ func Logger(next http.Handler) http.Handler {
 	})
 }
 
+// JSONLogger implements a middleware which adds a JSON [slog] access and error logger to each request.
+//
+// The access logger outputs to Stdout while the error logger outputs to Stderr.
 func JSONLogger(next http.Handler) http.Handler {
 	logger := slog.New(slog.NewJSONHandler(os.Stderr, logHandlerOpts))
 	accLogger := slog.New(slog.NewJSONHandler(os.Stdout, accLogHandlerOpts))
@@ -49,6 +55,7 @@ func JSONLogger(next http.Handler) http.Handler {
 	})
 }
 
+// NewLogger attaches the passed in [slog.Logger] access and error loggers to a request.
 func NewLogger(logger, accLogger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,16 +64,19 @@ func NewLogger(logger, accLogger *slog.Logger) func(http.Handler) http.Handler {
 	}
 }
 
+// GetLoggerFromContext returns the error logger from a given request context.
 func GetLoggerFromContext(ctx context.Context) (*slog.Logger, bool) {
 	l, ok := ctx.Value(loggerKey).(*slog.Logger)
 	return l, ok
 }
 
+// GetLoggerFromRequest returns the error logger from a given request.
 func GetLoggerFromRequest(r *http.Request) (*slog.Logger, bool) {
 	ctx := r.Context()
 	return GetLoggerFromContext(ctx)
 }
 
+// logRequest parses the request and response data to write out an access log line.
 func logRequest(w http.ResponseWriter, r *http.Request, next http.Handler, logger, accLogger *slog.Logger) {
 	// create new request context with logger attached
 	// this will be passed down to the remaining handlers

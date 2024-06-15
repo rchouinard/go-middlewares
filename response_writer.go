@@ -1,10 +1,10 @@
 package middlewares
 
 import (
-	"io"
 	"net/http"
 )
 
+// A ResponseWriter wraps an [http.ResponseWriter] to add additional functionality.
 type ResponseWriter interface {
 	http.ResponseWriter
 
@@ -13,6 +13,7 @@ type ResponseWriter interface {
 	Written() bool
 }
 
+// NewResponseWriter returns a ResponseWriter wrapping the provided [http.ResponseWriter].
 func NewResponseWriter(rw http.ResponseWriter) ResponseWriter {
 	nrw := &responseWriter{
 		ResponseWriter: rw,
@@ -21,6 +22,7 @@ func NewResponseWriter(rw http.ResponseWriter) ResponseWriter {
 	return nrw
 }
 
+// A responseWriter wraps an [http.ResponseWriter] to record the number of bytes written in a response.
 type responseWriter struct {
 	http.ResponseWriter
 
@@ -28,6 +30,7 @@ type responseWriter struct {
 	size   int
 }
 
+// Implements [http.ResponseWriter.WriteHeader]
 func (rw *responseWriter) WriteHeader(s int) {
 	if rw.Written() {
 		return
@@ -37,6 +40,7 @@ func (rw *responseWriter) WriteHeader(s int) {
 	rw.ResponseWriter.WriteHeader(s)
 }
 
+// Implements [http.ResponseWriter.Write]
 func (rw *responseWriter) Write(b []byte) (int, error) {
 	if !rw.Written() {
 		rw.WriteHeader(http.StatusOK)
@@ -48,30 +52,17 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return size, err
 }
 
+// Status retrieves the recorded response status code.
 func (rw *responseWriter) Status() int {
 	return rw.status
 }
 
+// Size retrieves the recorded response bytes written.
 func (rw *responseWriter) Size() int {
 	return rw.size
 }
 
+// Written retrieves whether or not the response headers have already been written.
 func (rw *responseWriter) Written() bool {
 	return rw.status != 0
-}
-
-func (rw *responseWriter) ReadFrom(r io.Reader) (int64, error) {
-	if !rw.Written() {
-		rw.WriteHeader(http.StatusOK)
-	}
-
-	n, err := io.Copy(rw.ResponseWriter, r)
-	rw.size += int(n)
-
-	return n, err
-}
-
-// implement http.ResponseController
-func (rw *responseWriter) Unwrap() http.ResponseWriter {
-	return rw.ResponseWriter
 }
