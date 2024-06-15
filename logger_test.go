@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rchouinard/middlewares"
+	"github.com/rchouinard/go-middlewares"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,4 +1,4 @@
-module github.com/rchouinard/middlewares
+module github.com/rchouinard/go-middlewares
 
 go 1.22.2
 
