@@ -1,4 +1,4 @@
-package middlewares_test
+package logger_test
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rchouinard/go-middlewares"
+	"github.com/rchouinard/go-middlewares/logger"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +34,7 @@ func TestLogger(t *testing.T) {
 	content := "Hello, World!"
 
 	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if l, ok := middlewares.GetLoggerFromRequest(r); ok {
+		if l, ok := logger.GetLoggerFromRequest(r); ok {
 			l.Info(content)
 			w.WriteHeader(200)
 			fmt.Fprintf(w, content)
@@ -49,7 +49,7 @@ func TestLogger(t *testing.T) {
 	accessLogger := slog.New(slog.NewJSONHandler(accessWriter, nil))
 	errorLogger := slog.New(slog.NewJSONHandler(errorWriter, nil))
 
-	mw := middlewares.NewLogger(errorLogger, accessLogger)(nextHandler)
+	mw := logger.New(errorLogger, accessLogger)(nextHandler)
 	mw.ServeHTTP(rec, req)
 
 	var accessJSON map[string]interface{}

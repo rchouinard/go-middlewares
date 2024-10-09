@@ -1,17 +1,17 @@
-package middlewares_test
+package common_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/rchouinard/go-middlewares"
+	"github.com/rchouinard/go-middlewares/common"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestResponseWriterBeforeWrite(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := middlewares.NewResponseWriter(rec)
+	rw := common.NewResponseWriter(rec)
 
 	assert.Equal(t, 0, rw.Status())
 	assert.Equal(t, "", rec.Body.String())
@@ -21,7 +21,7 @@ func TestResponseWriterBeforeWrite(t *testing.T) {
 
 func TestResponseWriterWriteString(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := middlewares.NewResponseWriter(rec)
+	rw := common.NewResponseWriter(rec)
 
 	content := "Hello, World!"
 	rw.Write([]byte(content))
@@ -34,7 +34,7 @@ func TestResponseWriterWriteString(t *testing.T) {
 
 func TestResponseWriterWriteHeader(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := middlewares.NewResponseWriter(rec)
+	rw := common.NewResponseWriter(rec)
 
 	rw.WriteHeader(http.StatusNotFound)
 
